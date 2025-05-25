@@ -26,14 +26,31 @@ class DiffNet(nn.Module):
     
     def diff_update(self, layer, x):
         meta = layer(x)
-        rolled_up = torch.roll(x, shifts=(1,0), dims=(2, 3))
-        rolled_down = torch.roll(x, shifts=(-1,0), dims=(2, 3))
-        rolled_left = torch.roll(x, shifts=(0,-1), dims=(2, 3))
-        rolled_right = torch.roll(x, shifts=(0,1), dims=(2, 3))
-        update_sequence = zip([rolled_up, rolled_down, rolled_left, rolled_right,x],
-                              [ meta[:,i,:,:]  for i in range(meta.shape[1])])
-        return x +  self.dt * torch.sum(m*r for r,m in update_sequence ) 
-    
+        
+        rolled_up    = self.shift_and_pad(x,  1, 2)
+        rolled_down  = self.shift_and_pad(x, -1, 2)
+        rolled_left  = self.shift_and_pad(x, -1, 3)
+        rolled_right = self.shift_and_pad(x,  1, 3)
+        
+        update_sequence = zip(
+            [rolled_up, rolled_down, rolled_left, rolled_right, x],
+            [meta[:, i, :, :].unsqueeze(1) for i in range(meta.shape[1])]
+        )
+        update_list = [m * r for r, m in update_sequence]
+        update = torch.stack(update_list, dim=0).sum(dim=0)
+        return x + self.dt * update
+
+    def shift_and_pad(self, x, shift, dim):
+        if shift == 0:
+            return x
+        pad = [0, 0, 0, 0]
+        pad[2 * (3 - dim) + (0 if shift > 0 else 1)] = abs(shift)
+        x_padded = F.pad(x, pad, mode='constant', value=0)
+        if shift > 0:
+            return x_padded.narrow(dim, 0, x.size(dim))
+        else:
+            return x_padded.narrow(dim, abs(shift), x.size(dim))
+
     def forward(self, x):
         for layer in self.layers:
             x = self.diff_update(layer, x)
