@@ -3,4 +3,5 @@ This repository collects the utilities for loading data from a PVA dataset
 
 Build docker image. From terminal:
 
-docker build -t centos-gpu .
+docker build -t nvidia
+
