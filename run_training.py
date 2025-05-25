@@ -28,10 +28,10 @@ test_loader = DataLoader(test_set, batch_size=batch_size)
 
 # Model, loss, optimizer
 
-for model in [[UNet(n_channels=1, n_classes=1), DiffNet(in_channels=1, out_channels=1)]]:
+for model in [UNet(n_channels=1, n_classes=1), DiffNet(in_channels=1, out_channels=1)]:
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-    
+
     def evaluate(loader):
         model.eval()
         total_loss = 0
@@ -42,11 +42,11 @@ for model in [[UNet(n_channels=1, n_classes=1), DiffNet(in_channels=1, out_chann
                 loss = criterion(pred, y)
                 total_loss += loss.item() * x.size(0)
         return total_loss / len(loader.dataset)
-    
+
     # Training loop with early stopping
     best_val_loss = float('inf')
     epochs_no_improve = 0
-    
+
     for epoch in range(epochs):
         model.train()
         for x, y in train_loader:
@@ -58,7 +58,7 @@ for model in [[UNet(n_channels=1, n_classes=1), DiffNet(in_channels=1, out_chann
             optimizer.step()
         val_loss = evaluate(val_loader)
         print(f"Epoch {epoch+1}/{epochs} - Validation Loss: {val_loss:.4f}")
-    
+
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             epochs_no_improve = 0
@@ -68,7 +68,7 @@ for model in [[UNet(n_channels=1, n_classes=1), DiffNet(in_channels=1, out_chann
             if epochs_no_improve >= patience:
                 print(f"Early stopping at epoch {epoch+1}")
                 break
-            
+
     # Load best model and evaluate on test set
     model.load_state_dict(torch.load("best_model.pt"))
     test_loss = evaluate(test_loader)
