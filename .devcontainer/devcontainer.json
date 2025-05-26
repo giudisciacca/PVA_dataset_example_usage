@@ -7,7 +7,7 @@
     "customizations": {
       "vscode": {
         "settings": {
-          "terminal.integrated.shell.linux": "/bin/bash"
+          // "terminal.integrated.shell.linux": "/bin/bash" // optional, deprecated
         },
         "extensions": [
           "ms-python.python",
@@ -15,6 +15,10 @@
         ]
       }
     },
-    "postCreateCommand": "pip install -r requirements.txt",
-    "remoteUser": "root"
-  }
+    // Remove if not needed, or keep if you want to re-install after build
+    // "postCreateCommand": "pip install -r requirements.txt",
+    "remoteUser": "root",
+    "mounts": [
+      "source=C:/Users/giudi/Downloads/connection,target=/workspace/pva-dataset,type=bind"
+    ]
+}
