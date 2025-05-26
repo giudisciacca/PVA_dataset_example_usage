@@ -10,12 +10,13 @@ from load_dataset import load_dataset  # Assumes this returns a torch Dataset
 # Hyperparameters
 batch_size = 1
 epochs = 5
-learning_rate = 1e-3
+learning_rate = 1e-2
 patience = 10  # Early stopping patience
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Load dataset
-dataset = load_dataset('/workspace/pva-dataset/Folder/HDF5/20210607_exp_EMNIST1_moving_phantom_5mm_1FT')
+dataset = load_dataset('/workspace/pva-dataset/Folder/HDF5/20210630_expsizes_EMNIST5_moving_phantom1_5mm_2FT_phantom2_5mm_1FT/EXP2021_siz2_phantom1_5mm_2FT_phantom2_5mm_1FT_moving_normPeak.h5')
+
 n_total = len(dataset)
 n_val = n_total // 10
 n_test = n_total // 10
@@ -28,7 +29,7 @@ test_loader = DataLoader(test_set, batch_size=batch_size)
 
 # Model, loss, optimizer
 
-for model in [DiffNet(in_channels=1, out_channels=1), UNet(n_channels=1, n_classes=1) ]:
+for model in [UNet(n_channels=1, n_classes=1), DiffNet(in_channels=1, out_channels=1) ]:
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 

@@ -21,7 +21,7 @@ class FourLayerCNN(nn.Module):
         x = self.conv4(x)
         if x.shape[2:] != input_shape[2:]:
             raise ValueError(f"Output shape {x.shape} does not match input shape {input_shape}")
-        return x
+        return F.relu(x)
     
 
 class DiffNet(nn.Module):
@@ -43,21 +43,18 @@ class DiffNet(nn.Module):
             [-x,rolled_up, rolled_down, rolled_left, rolled_right],
             [meta[:, i, :, :].unsqueeze(1) for i in range(meta.shape[1])]
         )
-        update_list = [m * r for r, m in update_sequence]
+        update_list = [self.dt * m * r for r, m in update_sequence]
         update = torch.stack(update_list, dim=0).sum(dim=0)
-        return x + self.dt * update
+        return x +  update
 
     def shift_and_pad(self, x, shift, dim):
         if shift == 0:
             return x
-        pad = [0, 0, 0, 0]
-        pad[2 * (3 - dim) + (0 if shift > 0 else 1)] = abs(shift)
+        pad = [abs(shift), abs(shift), abs(shift), abs(shift)]
         x_padded = F.pad(x, pad, mode='constant', value=0)
-        if shift > 0:
-            return x_padded.narrow(dim, 0, x.size(dim))
-        else:
-            return x_padded.narrow(dim, abs(shift), x.size(dim))
-
+        if shift !=0:
+            return torch.roll(x_padded, shift, dim)[...,abs(shift):-abs(shift),abs(shift):-abs(shift)]
+        
     def forward(self, x):
         for layer in self.layers:
             x = self.diff_update(layer, x)
