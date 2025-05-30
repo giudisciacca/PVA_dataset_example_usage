@@ -80,7 +80,7 @@ for model in [ DiffNet(in_channels=1),UNet(n_channels=1, n_classes=1) ]:
             if epochs_no_improve >= patience:
                 print(f"Early stopping at epoch {epoch+1}")
                 break
-
+#for model in [ DiffNet(in_channels=1),UNet(n_channels=1, n_classes=1) ]:
     # Load best model and evaluate on test set
     model.load_state_dict(torch.load(model._get_name()+"_best_model.pt"))
     test_loss = evaluate(test_loader)
@@ -116,7 +116,7 @@ for model in [ DiffNet(in_channels=1),UNet(n_channels=1, n_classes=1) ]:
             if output_img.shape[0] == 1:
                 output_img = output_img.squeeze(0)
             if target_img.shape[0] == 1:
-                target_img = output_img.squeeze(0)
+                target_img = target_img.squeeze(0)
             
             # Normalize to [0,1] for saving
             input_img = (input_img - input_img.min()) / (input_img.max() - input_img.min() + 1e-8)
